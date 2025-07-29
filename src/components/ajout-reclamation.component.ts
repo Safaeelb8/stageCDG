@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { ReclamationService } from '../services/reclamation.service';
 
 interface ReclamationData {
   categorie: string;
@@ -226,7 +227,9 @@ export class AjoutReclamationComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private reclamationService: ReclamationService 
+  
   ) {}
 
   ngOnInit(): void {
@@ -296,7 +299,35 @@ export class AjoutReclamationComponent implements OnInit {
       };
 
       // Simulation d'un appel HTTP (à remplacer par un vrai service)
-      this.simulateHttpPost(reclamationData);
+     const formData = new FormData();
+formData.append('categorie', reclamationData.categorie);
+formData.append('objet', reclamationData.objet);
+formData.append('description', reclamationData.description);
+if (reclamationData.fichierJoint) {
+  formData.append('fichierJoint', reclamationData.fichierJoint, reclamationData.fichierJoint.name);
+}
+
+this.reclamationService.submitReclamation(formData).subscribe({
+  next: (response) => {
+    this.isSubmitting = false;
+    this.numeroSuivi = this.generateTrackingNumber(); // tu peux garder ça ou le remplacer par response.numeroSuivi
+    this.showSuccessMessage = true;
+
+    this.snackBar.open('Réclamation envoyée avec succès!', 'Fermer', {
+      duration: 5000,
+      panelClass: ['success-snackbar']
+    });
+  },
+  error: (error) => {
+    this.isSubmitting = false;
+    this.snackBar.open("Erreur lors de l'envoi de la réclamation", 'Fermer', {
+      duration: 4000,
+      panelClass: ['error-snackbar']
+    });
+    console.error(error);
+  }
+});
+
     } else {
       this.markFormGroupTouched();
       this.snackBar.open('Veuillez corriger les erreurs dans le formulaire', 'Fermer', {
