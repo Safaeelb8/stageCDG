@@ -54,12 +54,12 @@ interface ReclamationData {
               <mat-label>Catégorie de la réclamation</mat-label>
               <mat-select formControlName="categorie" required>
                 <mat-option value="">-- Sélectionner une catégorie --</mat-option>
-                <mat-option value="retard">Retard de service</mat-option>
-                <mat-option value="erreur-donnees">Erreur de données</mat-option>
-                <mat-option value="qualite-service">Qualité de service</mat-option>
-                <mat-option value="facturation">Problème de facturation</mat-option>
-                <mat-option value="accueil">Accueil et information</mat-option>
-                <mat-option value="autre">Autre</mat-option>
+                <mat-option value="Retard de service">Retard de service</mat-option>
+                    <mat-option value="Erreur de données">Erreur de données</mat-option>
+                    <mat-option value="Qualité de service">Qualité de service</mat-option>
+                    <mat-option value="Problème de facturation">Problème de facturation</mat-option>
+                    <mat-option value="Accueil et information">Accueil et information</mat-option>
+                    <mat-option value="Autre">Autre</mat-option>
               </mat-select>
               <mat-icon matSuffix>category</mat-icon>
               @if (reclamationForm.get('categorie')?.invalid && reclamationForm.get('categorie')?.touched) {
