@@ -1,7 +1,7 @@
 package com.gestion.reclamation.backend.model;
 
 
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,8 +39,10 @@ public class Reclamation {
     @JoinColumn(name = "client_id") // clé étrangère dans la table reclamation
     private Client client;
 
+  
     // 🔸 Relation OneToMany avec Réponse
     @OneToMany(mappedBy = "reclamation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Reponse> reponses;
 
     // --- Getters & Setters ---

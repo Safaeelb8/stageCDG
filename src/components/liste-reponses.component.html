@@ -1,0 +1,59 @@
+<div class="container">
+  <div class="header">
+    <div class="header-content">
+      <h1>Réponses à la réclamation #{{ reclamationId }}</h1>
+      <button class="btn btn-primary" (click)="ajouterReponse()">
+        <mat-icon>add</mat-icon>
+        Ajouter une réponse
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div *ngIf="loading" class="loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des réponses...</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+      <mat-icon>error</mat-icon>
+      {{ error }}
+    </div>
+
+    <div *ngIf="!loading && !error && reponses.length === 0" class="empty-state">
+      <mat-icon>message</mat-icon>
+      <h3>Aucune réponse</h3>
+      <p>Cette réclamation n'a pas encore reçu de réponse.</p>
+      <button class="btn btn-primary" (click)="ajouterReponse()">
+        <mat-icon>add</mat-icon>
+        Ajouter la première réponse
+      </button>
+    </div>
+
+    <div *ngIf="!loading && !error && reponses.length > 0" class="reponses-list">
+      <div *ngFor="let reponse of reponses" class="reponse-card">
+        <div class="reponse-header">
+          <div class="agent-info">
+            <mat-icon>person</mat-icon>
+            <span>{{ reponse.agent.prenom }} {{ reponse.agent.nom }}</span>
+          </div>
+          <div class="date">
+            <mat-icon>schedule</mat-icon>
+            {{ formatDate(reponse.dateReponse) }}
+          </div>
+        </div>
+        
+        <div class="reponse-content">
+          <p>{{ reponse.message }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="btn btn-secondary" (click)="router.navigate(['/reclamations'])">
+      <mat-icon>arrow_back</mat-icon>
+      Retour aux réclamations
+    </button>
+  </div>
+</div> 
