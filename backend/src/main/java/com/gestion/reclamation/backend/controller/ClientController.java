@@ -28,7 +28,7 @@ public class ClientController {
 
     // 📋 Lister les réclamations du client
     @GetMapping("/{clientId}/reclamations")
-    public List<Reclamation> getReclamations(@PathVariable Long clientId) {
+    public List<Reclamation> getReclamationsByClient(@PathVariable Long clientId) {
         return reclamationService.getReclamationsByClient(clientId);
     }
 
