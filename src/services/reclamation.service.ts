@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ReclamationService {
-  private apiUrl = 'http://localhost:8080/api/reclamations'; // ⚠️ adapte le port si besoin
+  private apiUrl = 'http://localhost:8080/api/reclamations';
 
   constructor(private http: HttpClient) {}
 
