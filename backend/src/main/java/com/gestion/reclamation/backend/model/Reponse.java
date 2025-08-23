@@ -2,26 +2,29 @@ package com.gestion.reclamation.backend.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
-
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 public class Reponse {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String message;
+
     private LocalDateTime dateReponse;
 
     @ManyToOne
+    @JoinColumn(name = "agent_id")
     private Agent agent;
 
     @ManyToOne
     @JoinColumn(name = "reclamation_id")
+    @JsonBackReference
     private Reclamation reclamation;
-    // 🔽 GETTERS ET SETTERS
+
+    public Reponse() {}
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

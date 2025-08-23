@@ -6,7 +6,6 @@ import com.gestion.reclamation.backend.model.Reponse;
 import com.gestion.reclamation.backend.repository.AgentRepository;
 import com.gestion.reclamation.backend.repository.ReclamationRepository;
 import com.gestion.reclamation.backend.repository.ReponseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,32 +14,34 @@ import java.util.List;
 @Service
 public class ReponseService {
 
-    @Autowired
-    private ReponseRepository reponseRepository;
+    private final ReponseRepository reponseRepository;
+    private final ReclamationRepository reclamationRepository;
+    private final AgentRepository agentRepository;
 
-    @Autowired
-    private AgentRepository agentRepository;
+    public ReponseService(ReponseRepository reponseRepository,
+                          ReclamationRepository reclamationRepository,
+                          AgentRepository agentRepository) {
+        this.reponseRepository = reponseRepository;
+        this.reclamationRepository = reclamationRepository;
+        this.agentRepository = agentRepository;
+    }
 
-    @Autowired
-    private ReclamationRepository reclamationRepository;
-
-    public Reponse ajouterReponse(Long reclamationId, Long agentId, String message) {
-        Agent agent = agentRepository.findById(agentId)
-                .orElseThrow(() -> new RuntimeException("Agent non trouvé"));
-
+    public Reponse add(Long reclamationId, Long agentId, String message) {
         Reclamation reclamation = reclamationRepository.findById(reclamationId)
-                .orElseThrow(() -> new RuntimeException("Réclamation non trouvée"));
+                .orElseThrow(() -> new RuntimeException("Réclamation introuvable"));
+        Agent agent = agentRepository.findById(agentId)
+                .orElseThrow(() -> new RuntimeException("Agent introuvable"));
 
         Reponse reponse = new Reponse();
-        reponse.setAgent(agent);
         reponse.setReclamation(reclamation);
+        reponse.setAgent(agent);
         reponse.setMessage(message);
         reponse.setDateReponse(LocalDateTime.now());
 
         return reponseRepository.save(reponse);
     }
 
-    public List<Reponse> getReponsesByReclamation(Long reclamationId) {
+    public List<Reponse> listByReclamation(Long reclamationId) {
         return reponseRepository.findByReclamationId(reclamationId);
     }
 }
