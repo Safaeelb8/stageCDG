@@ -1,60 +1,58 @@
 {
-  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "cli": {
-    "analytics": "1e1de97b-a744-405a-8b5a-0397bb3d01ce"
-  },
-  "newProjectRoot": "projects",
+  "$schema": "./node_modules/@angular/cli/lib/config/workspace-schema.json",
+  "version": 1,
   "projects": {
-    "demo": {
+    "stagecdg": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
       "architect": {
         "build": {
-          "builder": "@angular/build:application",
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "tsConfig": "tsconfig.app.json",
+            "outputPath": "dist/stagecdg",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets"
+            ],
+            "styles": [
+              "src/global_styles.css"
+            ],
+            "inlineStyleLanguage": "css"
+          },
           "configurations": {
             "development": {
-              "extractLicenses": false,
-              "namedChunks": true,
               "optimization": false,
               "sourceMap": true
             },
             "production": {
-              "aot": true,
-              "extractLicenses": true,
-              "namedChunks": false,
               "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false
+              "outputHashing": "all"
             }
           },
-          "options": {
-            "assets": [],
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "outputPath": "dist/demo",
-            "polyfills": ["zone.js"],
-            "scripts": [],
-            "styles": ["src/global_styles.css"],
-            "tsConfig": "tsconfig.app.json"
-          }
+          "defaultConfiguration": "development"
         },
         "serve": {
-          "builder": "@angular/build:dev-server",
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "stagecdg:build"
+          },
           "configurations": {
-            "development": {
-              "buildTarget": "demo:build:development"
-            },
             "production": {
-              "buildTarget": "demo:build:production"
+              "buildTarget": "stagecdg:build:production"
+            },
+            "development": {
+              "buildTarget": "stagecdg:build:development"
             }
           },
           "defaultConfiguration": "development"
         }
-      },
-      "prefix": "app",
-      "projectType": "application",
-      "root": "",
-      "schematics": {},
-      "sourceRoot": "src"
+      }
     }
   },
-  "version": 1
+  "cli": { "analytics": false }
 }
