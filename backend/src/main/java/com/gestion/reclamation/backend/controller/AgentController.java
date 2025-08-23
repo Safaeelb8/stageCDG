@@ -1,37 +1,23 @@
 package com.gestion.reclamation.backend.controller;
 
-import com.gestion.reclamation.backend.model.Reclamation;
-import com.gestion.reclamation.backend.model.Reponse;
-import com.gestion.reclamation.backend.service.ReclamationService;
-import com.gestion.reclamation.backend.service.ReponseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.gestion.reclamation.backend.model.Agent;
+import com.gestion.reclamation.backend.service.AgentService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/agent")
+@RequestMapping("/api/agents")
 @CrossOrigin(origins = "http://localhost:4200")
 public class AgentController {
 
-    @Autowired
-    private ReclamationService reclamationService;
+    private final AgentService service;
 
-    @Autowired
-    private ReponseService reponseService;
+    public AgentController(AgentService service) { this.service = service; }
 
-    // 📋 Lister toutes les réclamations
-    @GetMapping("/reclamations")
-    public List<Reclamation> getAllReclamations() {
-        return reclamationService.getAllReclamations();
-    }
+    @GetMapping
+    public List<Agent> all() { return service.getAll(); }
 
-    // ➕ Ajouter une réponse à une réclamation
-    @PostMapping("/reclamations/{reclamationId}/repondre")
-    public Reponse ajouterReponse(
-            @PathVariable Long reclamationId,
-            @RequestParam Long agentId,
-            @RequestBody String message) {
-        return reponseService.ajouterReponse(reclamationId, agentId, message);
-    }
+    @PostMapping
+    public Agent create(@RequestBody Agent agent) { return service.create(agent); }
 }

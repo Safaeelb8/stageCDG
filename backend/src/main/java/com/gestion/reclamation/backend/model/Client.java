@@ -2,19 +2,26 @@ package com.gestion.reclamation.backend.model;
 
 import jakarta.persistence.*;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+@JsonIgnoreProperties({"hibernateLazyInitializer","handler"})
 
 @Entity
 public class Client {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nom;
     private String email;
 
     @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Reclamation> reclamations;
 
-    // Getters et Setters
+    public Client() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

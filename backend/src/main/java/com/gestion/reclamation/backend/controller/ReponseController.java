@@ -2,36 +2,52 @@ package com.gestion.reclamation.backend.controller;
 
 import com.gestion.reclamation.backend.model.Reponse;
 import com.gestion.reclamation.backend.service.ReponseService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/reponses")
-@CrossOrigin(origins = {"http://localhost:8080", "http://localhost:4200", "http://localhost:49217"})
+@CrossOrigin(origins = "http://localhost:4200")
 public class ReponseController {
 
-    @Autowired
-    private ReponseService reponseService;
+    private final ReponseService service;
 
+    public ReponseController(ReponseService service) {
+        this.service = service;
+    }
+
+    // POST /api/reponses/reclamation/{reclamationId}/agent/{agentId}
     @PostMapping("/reclamation/{reclamationId}/agent/{agentId}")
-    public ResponseEntity<Reponse> ajouterReponse(
+    public ResponseEntity<Reponse> addWithAgent(
             @PathVariable Long reclamationId,
             @PathVariable Long agentId,
-            @RequestBody String message) {
-        try {
-            Reponse reponse = reponseService.ajouterReponse(reclamationId, agentId, message);
-            return ResponseEntity.ok(reponse);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+            @RequestBody ReponseRequest body
+    ) {
+        Reponse saved = service.add(reclamationId, agentId, body.getMessage());
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    @GetMapping("/reclamation/{reclamationId}")
-    public ResponseEntity<List<Reponse>> getReponsesByReclamation(@PathVariable Long reclamationId) {
-        List<Reponse> reponses = reponseService.getReponsesByReclamation(reclamationId);
-        return ResponseEntity.ok(reponses);
+    // POST /api/reponses/reclamation/{reclamationId}  (agent optionnel non fourni)
+    @PostMapping("/reclamation/{reclamationId}")
+    public ResponseEntity<Reponse> addWithoutAgent(
+            @PathVariable Long reclamationId,
+            @RequestBody ReponseRequest body
+    ) {
+        Reponse saved = service.add(reclamationId, null, body.getMessage());
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
-} 
+
+    // GET /api/reponses/reclamation/{reclamationId}
+    @GetMapping("/reclamation/{reclamationId}")
+    public ResponseEntity<Iterable<Reponse>> listByReclamation(@PathVariable Long reclamationId) {
+        return ResponseEntity.ok(service.listByReclamation(reclamationId));
+    }
+
+    // DTO pour le corps de la requête
+    public static class ReponseRequest {
+        private String message;
+        public String getMessage() { return message; }
+        public void setMessage(String message) { this.message = message; }
+    }
+}
