@@ -1,0 +1,29 @@
+<!-- HEADER GLOBAL (toujours visible) -->
+<header class="site-header">
+  <div class="site-header__wrap">
+    <!-- bloc marque centré -->
+    <div class="site-brand">
+      <div class="brand-logo">
+        <img src="assets/cdg.png" alt="Caisse de Dépôt et de Gestion (CDG)">
+      </div>
+      <div class="brand-text">
+        <div class="title">Caisse de Dépôt et de Gestion</div>
+        <div class="subtitle">Portail des réclamations</div>
+      </div>
+    </div>
+
+    <!-- action à droite (cachée sur /role) -->
+    <a class="role-switch" *ngIf="!isLanding" routerLink="/role">
+      <mat-icon>sync_alt</mat-icon>
+      Changer de rôle
+    </a>
+  </div>
+</header>
+
+<!-- CONTENU -->
+<main class="site-main">
+  <div *ngIf="currentRole" class="role-banner">
+    Connecté en tant que <strong>{{ currentRole }}</strong>
+  </div>
+  <router-outlet></router-outlet>
+</main>

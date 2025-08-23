@@ -1,92 +1,68 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { ApiService } from '../services/api.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ReclamationService } from '../services/reclamation.service';
 
 @Component({
-  selector: 'app-ajout-reponse',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule
-  ],
+  selector: 'app-reponse-new',
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './ajout-reponse.component.html',
   styleUrls: ['./ajout-reponse.component.css']
 })
-export class AjoutReponseComponent implements OnInit {
-  reponseForm: FormGroup;
-  reclamationId: number = 0;
-  agentId: number = 1; // ID par défaut de l'agent
+export class ReponseNewComponent implements OnInit {
+  reclamationId = 0;
+  maxLen = 1000;
+
+  form = this.fb.group({
+    agentId: [null, [Validators.required, Validators.min(1)]],        // ⬅️ obligatoire
+    message: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(this.maxLen)]]
+  });
+
   loading = false;
-  success = false;
   error = '';
+  success = false;
 
   constructor(
     private fb: FormBuilder,
-    private http: HttpClient,
-    private apiService: ApiService,
-    public router: Router,
-    private route: ActivatedRoute
-  ) {
-    this.reponseForm = this.fb.group({
-      message: ['', [Validators.required, Validators.minLength(10)]]
-    });
-  }
+    private api: ReclamationService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.reclamationId = +params['id'];
+    this.reclamationId = Number(this.route.snapshot.paramMap.get('id'));
+  }
+
+  get messageCtrl(): AbstractControl { return this.form.controls['message']; }
+  get agentCtrl(): AbstractControl { return this.form.controls['agentId']; }
+
+  cancel(): void {
+    // cette page est côté Agent ; on revient vers la liste des réponses agent
+    this.router.navigate(['/agent/reclamations', this.reclamationId, 'reponses']);
+  }
+
+  submit(): void {
+    if (this.loading || this.form.invalid) { this.form.markAllAsTouched(); return; }
+
+    this.loading = true;
+    this.error = '';
+    this.success = false;
+
+    const message = String(this.form.value.message || '').trim();
+    const agentId = Number(this.form.value.agentId);
+
+    this.api.createReponse({ reclamationId: this.reclamationId, message, agentId }).subscribe({
+      next: () => {
+        this.loading = false;
+        this.success = true;
+        setTimeout(() => this.router.navigate(['/agent/reclamations', this.reclamationId, 'reponses']), 600);
+      },
+      error: () => {
+        this.loading = false;
+        this.error = "Erreur lors de l'ajout de la réponse.";
+      }
     });
   }
-
-  onSubmit() {
-    if (this.reponseForm.valid) {
-      this.loading = true;
-      this.error = '';
-      
-      const message = this.reponseForm.get('message')?.value;
-      
-      this.apiService.addReponse(this.reclamationId, this.agentId, message)
-        .subscribe({
-          next: (response) => {
-            this.loading = false;
-            this.success = true;
-            this.reponseForm.reset();
-            setTimeout(() => {
-              this.router.navigate(['/reclamations']);
-            }, 2000);
-          },
-          error: (error) => {
-            this.loading = false;
-            this.error = 'Erreur lors de l\'ajout de la réponse. Veuillez réessayer.';
-            console.error('Erreur:', error);
-          }
-        });
-    }
-  }
-
-  getErrorMessage(field: string): string {
-    const control = this.reponseForm.get(field);
-    if (control?.hasError('required')) {
-      return 'Ce champ est requis';
-    }
-    if (control?.hasError('minlength')) {
-      return 'Le message doit contenir au moins 10 caractères';
-    }
-    return '';
-  }
-} 
+}

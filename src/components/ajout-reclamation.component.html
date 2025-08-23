@@ -1,0 +1,113 @@
+<div class="page">
+  <main class="container">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <div class="avatar"><mat-icon>cloud_upload</mat-icon></div>
+        <div class="titles">
+          <mat-card-title>Nouvelle Réclamation</mat-card-title>
+          <mat-card-subtitle>Veuillez remplir le formulaire ci-dessous pour soumettre votre réclamation</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
+
+          <!-- Ligne 1 en grille: ID + Catégorie -->
+          <div class="form-grid">
+            <mat-form-field appearance="fill" class="field">
+              <mat-label>ID Client*</mat-label>
+              <input matInput type="number" formControlName="clientId" placeholder="1" />
+              <mat-error *ngIf="f.clientId.touched && f.clientId.hasError('required')">Requis</mat-error>
+              <mat-error *ngIf="f.clientId.touched && f.clientId.hasError('min')">Valeur minimale: 1</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="field">
+              <mat-label>Catégorie de la réclamation*</mat-label>
+              <mat-select formControlName="categorie" required>
+                <mat-option value="Retard de service">Retard de service</mat-option>
+                <mat-option value="Qualité de service">Qualité de service</mat-option>
+                <mat-option value="Erreur de données">Erreur de données</mat-option>
+                <mat-option value="Autre">Autre</mat-option>
+              </mat-select>
+              <mat-icon matSuffix>category</mat-icon>
+              <mat-error *ngIf="f.categorie.touched && f.categorie.invalid">Choisis une catégorie</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Objet -->
+          <mat-form-field appearance="fill" class="field">
+            <mat-label>Objet de la réclamation*</mat-label>
+            <input
+              matInput formControlName="objet" maxlength="100" placeholder="Résumé en une phrase">
+            <mat-icon matSuffix>title</mat-icon>
+            <mat-hint align="start" class="hint">Sois concis et précis</mat-hint>
+            <mat-hint align="end" class="counter">{{ f.objet.value?.length || 0 }}/100</mat-hint>
+            <mat-error *ngIf="f.objet.touched && f.objet.hasError('required')">Requis</mat-error>
+          </mat-form-field>
+
+          <!-- Description -->
+          <mat-form-field appearance="fill" class="field">
+            <mat-label>Description détaillée*</mat-label>
+            <textarea
+              matInput rows="7" formControlName="description" maxlength="1000"
+              (keydown.control.enter)="submit()"></textarea>
+            <mat-icon matSuffix>description</mat-icon>
+            <mat-hint align="start" class="hint">Astuce: <b>Ctrl+Entrée</b> pour envoyer</mat-hint>
+            <mat-hint align="end" class="counter">{{ f.description.value?.length || 0 }}/1000</mat-hint>
+            <mat-error *ngIf="f.description.touched && f.description.hasError('required')">Requis</mat-error>
+            <mat-error *ngIf="f.description.touched && f.description.hasError('minlength')">
+              Minimum {{ f.description.errors?.['minlength']?.requiredLength }} caractères
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Fichier joint: drag & drop -->
+          <div class="file-zone" [class.dragover]="dragOver"
+               (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+
+            <mat-form-field appearance="fill" class="field">
+              <mat-label>Fichier joint (optionnel)</mat-label>
+              <input matInput [readonly]="true" [value]="selectedFileName" placeholder="Glissez-déposez ou cliquez…">
+              <mat-icon matSuffix>attach_file</mat-icon>
+            </mat-form-field>
+
+            <div class="file-actions">
+              <button type="button" mat-raised-button color="accent" (click)="fileInput.click()">
+                <mat-icon>upload</mat-icon> CHOISIR UN FICHIER
+              </button>
+              <button *ngIf="selectedFile" type="button" mat-stroked-button color="warn" (click)="clearFile()">
+                <mat-icon>close</mat-icon> Retirer
+              </button>
+              <input #fileInput hidden type="file" (change)="onFileSelected($event)">
+            </div>
+
+            <div class="file-info">
+              <mat-icon>info</mat-icon>
+              <span>PDF, DOC(X), JPG/JPEG, PNG, TXT — <b>max. 5 MB</b></span>
+            </div>
+
+            <div *ngIf="selectedFile" class="file-pill">
+              <mat-icon>insert_drive_file</mat-icon>{{ selectedFileName }}
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="actions">
+            <button mat-stroked-button color="warn" type="button" (click)="reset()" [disabled]="isSending">
+              <mat-icon>restart_alt</mat-icon> Réinitialiser
+            </button>
+
+            <button mat-raised-button color="primary" type="submit" [disabled]="isSending || form.invalid">
+              <ng-container *ngIf="!isSending; else sending">
+                <mat-icon>send</mat-icon> Envoyer la réclamation
+              </ng-container>
+              <ng-template #sending>
+                <mat-progress-spinner diameter="20" mode="indeterminate"></mat-progress-spinner>
+              </ng-template>
+            </button>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </main>
+</div>

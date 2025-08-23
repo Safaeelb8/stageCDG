@@ -1,0 +1,94 @@
+<div class="page">
+  <!-- HERO -->
+<div class="hero">
+  <div class="hero__left">
+    <!-- Bouton RETOUR pro -->
+    <button type="button" class="btn-back" (click)="backToList()">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Retour</span>
+    </button>
+
+    <h1>Réclamation #{{ data?.id }}</h1>
+    <p class="hero__subtitle">{{ data?.objet }}</p>
+
+    <div class="chips">
+      <span class="chip" [ngClass]="chipClass(data?.statut)">{{ labelStatut(data?.statut) }}</span>
+      <span class="chip chip--category">{{ data?.categorie }}</span>
+    </div>
+  </div>
+
+  <div class="hero__actions">
+    <button type="button" class="btn btn--soft" (click)="goReponses()">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+      Voir les réponses
+    </button>
+
+    <button type="button" class="btn btn--primary" *ngIf="isAgent" (click)="goNewResponse()">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 20h9M16.5 3.5a2.12 2.12 0 1 1 3 3L8 18l-4 1 1-4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Répondre
+    </button>
+  </div>
+</div>
+
+
+  <!-- META CARDS -->
+  <section class="meta-cards">
+    <div class="mcard">
+      <div class="mcard__label">Statut</div>
+      <div class="mcard__value"><span class="chip" [ngClass]="chipClass(data?.statut)">{{ labelStatut(data?.statut) }}</span></div>
+    </div>
+    <div class="mcard">
+      <div class="mcard__label">Catégorie</div>
+      <div class="mcard__value"><span class="chip chip--category">{{ data?.categorie }}</span></div>
+    </div>
+    <div class="mcard">
+      <div class="mcard__label">Créée</div>
+      <div class="mcard__value">{{ data?.dateCreation | date:'dd/MM/yyyy, HH:mm' }}</div>
+    </div>
+    <div class="mcard">
+      <div class="mcard__label">Client</div>
+      <div class="mcard__value">{{ data?.clientNom || ('ID ' + data?.clientId) }}</div>
+    </div>
+  </section>
+
+  <!-- CONTENT GRID -->
+  <section class="grid">
+    <!-- Message -->
+    <article class="card">
+      <h3>Message</h3>
+      <div class="message" [class.empty]="!data?.description">{{ data?.description || '—' }}</div>
+    </article>
+
+    <!-- Pièces jointes -->
+    <article class="card">
+      <h3>Pièces jointes</h3>
+
+      <ng-container *ngIf="data?.attachments?.length; else nofiles">
+        <ul class="files-grid">
+          <li class="file-card" *ngFor="let att of data.attachments" (click)="openAttachment(att)">
+            <div class="thumb" *ngIf="(att.fileType || '').toLowerCase().startsWith('image/'); else icon">
+              <img [src]="thumbUrl(att)" alt="{{ att.fileName }}" />
+            </div>
+            <ng-template #icon>
+              <div class="file-icon">{{ iconFor(att) }}</div>
+            </ng-template>
+
+            <div class="file-name" [title]="att.fileName">{{ att.fileName }}</div>
+            <div class="file-meta">{{ att.fileType }}</div>
+            <button class="btn btn--ghost">Ouvrir</button>
+          </li>
+        </ul>
+      </ng-container>
+
+      <ng-template #nofiles>
+        <div class="empty">Aucun fichier joint.</div>
+      </ng-template>
+    </article>
+  </section>
+</div>

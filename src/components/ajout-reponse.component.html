@@ -1,63 +1,74 @@
-<div class="container">
-  <div class="card">
-    <div class="card-header">
-      <h2>Répondre à la réclamation #{{ reclamationId }}</h2>
-      <p class="subtitle">Rédigez votre réponse professionnelle</p>
+<div class="page">
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero__left">
+      <button type="button" class="btn-back" (click)="cancel()">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Retour</span>
+      </button>
+      <h2>Nouvelle réponse – Réclamation #{{ reclamationId }}</h2>
+      <p class="hero__sub">Veuillez remplir les champs ci-dessous</p>
     </div>
+  </div>
 
-    <div class="card-body">
-      <form [formGroup]="reponseForm" (ngSubmit)="onSubmit()" class="form">
-        
-        <div class="form-group">
-          <label for="message" class="form-label">
-            <mat-icon>message</mat-icon>
-            Message de réponse
-          </label>
-          <textarea
-            id="message"
-            formControlName="message"
-            class="form-control"
-            rows="6"
-            placeholder="Tapez votre réponse détaillée ici..."
-            [class.error]="reponseForm.get('message')?.invalid && reponseForm.get('message')?.touched"
-          ></textarea>
-          <div class="error-message" *ngIf="reponseForm.get('message')?.invalid && reponseForm.get('message')?.touched">
-            {{ getErrorMessage('message') }}
+  <section class="card">
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="form-grid">
+        <!-- Agent ID (obligatoire, en premier) -->
+        <div class="field" [class.field--invalid]="agentCtrl.touched && agentCtrl.invalid">
+          <label for="agentId">Agent ID <span class="muted">*</span></label>
+          <input
+            id="agentId"
+            class="input"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            formControlName="agentId"
+            placeholder="ex : 1"
+            autofocus
+          />
+          <div class="errors" *ngIf="agentCtrl.touched && agentCtrl.invalid">
+            <div *ngIf="agentCtrl.errors?.['required']">L’identifiant agent est requis.</div>
+            <div *ngIf="agentCtrl.errors?.['min']">Valeur minimale : 1.</div>
           </div>
         </div>
 
-        <div class="form-actions">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            (click)="router.navigate(['/reclamations'])"
-            [disabled]="loading"
-          >
-            <mat-icon>arrow_back</mat-icon>
-            Annuler
-          </button>
-          
-          <button
-            type="submit"
-            class="btn btn-primary"
-            [disabled]="reponseForm.invalid || loading"
-          >
-            <mat-icon *ngIf="!loading">send</mat-icon>
-            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-            {{ loading ? 'Envoi en cours...' : 'Envoyer la réponse' }}
-          </button>
-        </div>
+        <!-- Message -->
+        <div class="field" [class.field--invalid]="messageCtrl.touched && messageCtrl.invalid">
+          <label for="message">Message <span class="muted">*</span></label>
+          <textarea
+            id="message"
+            class="input input--textarea"
+            rows="10"
+            formControlName="message"
+            [attr.maxlength]="maxLen"
+            placeholder="Décrivez votre réponse…"
+            (keydown.control.enter)="submit()"
+          ></textarea>
+          <div class="counter">{{ messageCtrl.value?.length || 0 }}/{{ maxLen }}</div>
+          <div class="hint">Astuce : <strong>Ctrl+Entrée</strong> pour envoyer</div>
 
-        <div class="alert alert-success" *ngIf="success">
-          <mat-icon>check_circle</mat-icon>
-          Réponse envoyée avec succès ! Redirection en cours...
+          <div class="errors" *ngIf="messageCtrl.touched && messageCtrl.invalid">
+            <div *ngIf="messageCtrl.errors?.['required']">Le message est requis.</div>
+            <div *ngIf="messageCtrl.errors?.['minlength']">Minimum {{ messageCtrl.errors?.['minlength'].requiredLength }} caractères.</div>
+          </div>
         </div>
+      </div>
 
-        <div class="alert alert-error" *ngIf="error">
-          <mat-icon>error</mat-icon>
-          {{ error }}
-        </div>
-      </form>
-    </div>
-  </div>
-</div> 
+      <!-- Actions -->
+      <div class="actions">
+        <button type="button" class="btn btn--ghost" (click)="cancel()" [disabled]="loading">Annuler</button>
+        <button type="submit" class="btn btn--primary" [disabled]="loading || form.invalid">
+          <span *ngIf="!loading">Envoyer</span>
+          <span *ngIf="loading" class="spinner" aria-label="Envoi en cours"></span>
+        </button>
+      </div>
+
+      <!-- Status -->
+      <div *ngIf="error" class="alert alert--error">{{ error }}</div>
+      <div *ngIf="success" class="alert alert--ok">Réponse ajoutée.</div>
+    </form>
+  </section>
+</div>

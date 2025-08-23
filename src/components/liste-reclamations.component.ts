@@ -1,103 +1,88 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ApiService } from '../services/api.service';
-import { Router } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatMenuModule } from '@angular/material/menu';
-import { AuthService } from '../services/auth.service';
-
-interface Reclamation {
-  id: number;
-  categorie: string;
-  objet: string;
-  description: string;
-  dateCreation: string;
-  statut: string; // ex: 'NOUVELLE' | 'EN_COURS' | ...
-  client: { id: number; nom: string; email: string; };
-}
+import { ReclamationService, ReclamationDto, ReclamationStatus } from '../services/reclamation.service';
+import { MatTooltipModule } from '@angular/material/tooltip'; // ⬅️ NEW
 
 @Component({
-  selector: 'app-liste-reclamations',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatChipsModule,
-    MatMenuModule
-  ],
-  template: `<!-- identique à ton template -->`,
-  styles: [`/* identiques à tes styles */`]
+  selector: 'app-reclamations-list',
+  imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule,MatTooltipModule],
+  templateUrl: './liste-reclamations.component.html',
+  styleUrls: ['./liste-reclamations.component.css']
 })
-export class ListeReclamationsComponent implements OnInit {
-  reclamations: Reclamation[] = [];
+export class ReclamationsListComponent implements OnInit {
   loading = true;
   error = '';
-  isAgent = false;
+  reclamations: ReclamationDto[] = [];
+  patching: Record<number, boolean> = {};
 
-  constructor(
-    private apiService: ApiService,
-    private authService: AuthService,
-    public router: Router
-  ) {
-    const user = this.authService.getCurrentUser();
-    // Vérifie bien la valeur réelle renvoyée par le back (ex: "AGENT" ou "ROLE_AGENT")
-    this.isAgent = user?.role === 'ROLE_AGENT' || user?.role === 'AGENT';
-  }
+  constructor(private api: ReclamationService, private router: Router) {}
 
-  ngOnInit(): void {
-    this.chargerReclamations();
-  }
+  ngOnInit(): void { this.refresh(); }
 
-  chargerReclamations(): void {
+  refresh() {
     this.loading = true;
-    this.error = '';
-    this.apiService.getReclamations().subscribe({
-      next: (recs) => { this.reclamations = recs; this.loading = false; },
-      error: (err) => {
-        this.error = 'Erreur lors du chargement des réclamations';
-        this.loading = false;
-        console.error('Erreur:', err);
+    this.api.list().subscribe({
+      next: data => { this.reclamations = data; this.loading = false; },
+      error: () => { this.error = 'Erreur lors du chargement des réclamations'; this.loading = false; }
+    });
+  }
+
+  get isAgent(): boolean { return this.router.url.startsWith('/agent'); }
+
+  goNew() {
+    const base = this.isAgent ? '/agent' : '/client';
+    this.router.navigate([base, 'reclamations', 'nouvelle']);
+  }
+
+  goDetails(r: ReclamationDto) {
+  const base = this.isAgent ? '/agent' : '/client';
+  this.router.navigate([base, 'reclamations', r.id]); // route détail
+}
+
+  goReponses(r: ReclamationDto) {
+    const base = this.isAgent ? '/agent' : '/client';
+    this.router.navigate([base, 'reclamations', r.id, 'reponses']);
+  }
+
+  /** Mapping affichage */
+  labelStatut(s?: string) {
+    return s === 'NOUVELLE' ? 'Nouvelle'
+         : s === 'EN_COURS' ? 'En cours'
+         : s === 'RESOLUE'  ? 'Résolue'
+         : '—';
+  }
+  statusChip(s?: string) {
+    return s === 'RESOLUE' ? 'chip--success'
+         : s === 'EN_COURS' ? 'chip--warn'
+         : 'chip--info';
+  }
+  countBy(status: ReclamationStatus) {
+    return (this.reclamations || []).filter(r => r.statut === status).length;
+  }
+  trackById(_i: number, r: ReclamationDto) { return r.id; }
+
+  /** Envoi la valeur canonique attendue par le backend */
+  private setStatus(r: ReclamationDto, status: ReclamationStatus) {
+    if (!r?.id || this.patching[r.id]) return;
+    this.patching[r.id] = true;
+
+    const previous = r.statut;
+    r.statut = status; // optimistic
+
+    this.api.updateReclamationStatus(r.id, status).subscribe({
+      next: updated => { r.statut = updated.statut; this.patching[r.id] = false; },
+      error: err => {
+        console.error('PATCH status error', err);
+        r.statut = previous; this.patching[r.id] = false;
       }
     });
   }
 
-  trackByRecId = (_: number, r: Reclamation) => r.id;
-
-  voirReponses(id: number) { this.router.navigate(['/reponses', id]); }
-  ajouterReponse(id: number) { this.router.navigate(['/reponse/ajouter', id]); }
-  ajouterReclamation() { this.router.navigate(['/reclamations']); }
-
-  updateStatus(id: number, newStatus: string): void {
-    this.apiService.updateReclamationStatus(id, newStatus).subscribe({
-      next: () => {
-        const r = this.reclamations.find(x => x.id === id);
-        if (r) r.statut = newStatus;
-      },
-      error: (e) => console.error('Erreur lors de la mise à jour du statut:', e)
-    });
-  }
-
-  formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleString('fr-FR', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit'
-    });
-  }
-
-  getStatusColor(statut: string): 'primary' | 'accent' | 'warn' {
-    switch (statut) {
-      case 'EN_COURS':   return 'accent';
-      case 'TRAITEE':    return 'primary';
-      case 'EN_ATTENTE': return 'warn';
-      case 'FERMEE':     return 'warn';
-      default:           return 'primary'; // NOUVELLE + fallback
-    }
-  }
+  setEnCours(r: ReclamationDto)  { this.setStatus(r, 'EN_COURS'); }
+  setResolue(r: ReclamationDto)  { this.setStatus(r, 'RESOLUE'); }
+  setNouvelle(r: ReclamationDto) { this.setStatus(r, 'NOUVELLE'); }
 }
