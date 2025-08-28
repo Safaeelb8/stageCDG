@@ -2,8 +2,9 @@
   --bg:#f6f7fb; --card:#fff; --border:#e6e7ef; --text:#2b2b3c; --muted:#7b7b8a;
   --primary:#5b53e6; --primary-600:#4940d6; --accent:#7b61ff; --ok:#168a45; --err:#b42318;
 }
-
 *{box-sizing:border-box}
+
+/* page background */
 .page{
   min-height:100vh;
   background:
@@ -12,23 +13,50 @@
     var(--bg);
 }
 
-/* wrapper */
+/* layout wrapper */
 .container{ max-width:1100px; margin:28px auto; padding:0 16px; }
 
-/* card */
+/* ===== Hero bar: retour + rôle ===== */
+.hero-bar{
+  display:flex; align-items:center; justify-content:space-between;
+  margin: 4px 0 18px;
+  padding:10px;
+  border-radius:16px;
+  background: linear-gradient(180deg, rgba(124,118,255,.08), rgba(124,118,255,.02));
+  box-shadow: 0 12px 30px rgba(10,10,40,.06);
+}
+.btn-back{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:999px; border:1px solid var(--border);
+  background:var(--card); color:var(--text); font-weight:700; cursor:pointer;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.btn-back mat-icon{ font-variation-settings: 'OPSZ' 20; }
+.btn-back:hover{
+  transform: translateY(-1px);
+  border-color:#cfd4ff; box-shadow:0 10px 24px rgba(99,91,230,.14);
+}
+.hero-right{ display:flex; align-items:center; gap:10px; }
+.role-chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:999px; font-weight:700;
+  background:#edf2ff; color:#3949ab; border:1px solid #dbe0ff;
+}
+.role-chip.agent{ background:#ffeef7; color:#b83280; border-color:#ffd3ea; }
+
+/* ===== Card ===== */
 .form-card{
   border-radius:18px;
   box-shadow:0 16px 40px rgba(10,10,40,.08);
   overflow:hidden;
 }
 
-/* header / “hero” */
+/* header */
 mat-card-header{
   position:relative;
   padding:18px 20px;
   background:linear-gradient(180deg, rgba(99,91,230,.10), rgba(99,91,230,.04));
 }
-
 .avatar{
   width:52px;height:52px;border-radius:50%;
   background:#7b61ff1a;color:#7b61ff;display:grid;place-items:center;
@@ -36,13 +64,10 @@ mat-card-header{
 .titles mat-card-title{ font-size:22px;font-weight:800 }
 .titles mat-card-subtitle{ color:var(--muted) }
 
-/* formulaire */
+/* form */
 .form{ display:grid; gap:16px; }
 .form-grid{ display:grid; gap:16px; }
-@media (min-width:900px){
-  .form-grid{ grid-template-columns: 1fr 1fr; }
-}
-
+@media (min-width:900px){ .form-grid{ grid-template-columns: 1fr 1fr; } }
 .field{ width:100% }
 
 /* file zone */
@@ -70,7 +95,7 @@ mat-card-header{
   padding:10px 0 2px;
 }
 
-/* aides / états */
+/* hints */
 .hint{ color:var(--muted); font-size:12px }
 .counter{ color:var(--muted) }
 .mat-mdc-form-field-hint{ opacity:.9 }

@@ -1,96 +1,73 @@
 <div class="page" role="main">
-  
+  <div class="shell">
+    <!-- Colonne gauche : titre + badges -->
+    <section class="left" aria-labelledby="hero-title">
+      <h1 id="hero-title" class="title">
+        Bienvenue sur votre espace<br />
+        de <span class="accent">réclamations</span>
+      </h1>
 
-  <!-- Hero -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div>
-      <h1 id="hero-title" class="hero__title">Bienvenue sur votre espace de réclamations</h1>
-      <p class="hero__subtitle">
+      <p class="subtitle">
         Déposez, suivez et échangez en toute transparence avec nos équipes.
-        Service sécurisé, traçable, et conforme aux exigences réglementaires.
+        Service sécurisé, traçable et conforme aux exigences réglementaires.
       </p>
-      <div class="hero__badges" aria-hidden="true">
-        <span class="badge"><mat-icon class="ok">verified_user</mat-icon> Sécurisé</span>
-        <span class="badge"><mat-icon>event_available</mat-icon> Accusé de réception</span>
-        <span class="badge"><mat-icon>schedule</mat-icon> Suivi en temps réel</span>
-      </div>
-    </div>
 
-    <div class="cards-col">
+      <div class="badges" aria-hidden="true">
+        <div class="chip"><mat-icon>verified_user</mat-icon> Sécurisé</div>
+        <div class="chip"><mat-icon>event_available</mat-icon> Accusé de réception</div>
+        <div class="chip"><mat-icon>schedule</mat-icon> Suivi en temps réel</div>
+      </div>
+    </section>
+
+    <!-- Colonne droite : cartes rôle -->
+    <section class="right" aria-label="Choix d'espace">
+      <!-- Carte CLIENT -->
       <mat-card class="role-card"
-                tabindex="0"
-                (click)="goClient()"
-                (keyup.enter)="goClient()"
-                matRipple
-                [matRippleColor]="'#5b53e622'">
-        <div class="role-icon client"><mat-icon>person</mat-icon></div>
-        <div class="role-body">
+        #c0
+        (mousemove)="onMove($event,0,c0)"
+        (mouseleave)="onLeave(0)"
+        (click)="goClient()"
+        matRipple
+        [ngStyle]="{'--mx': cards[0].mx+'px','--my': cards[0].my+'px','--rx': cards[0].rx+'deg','--ry': cards[0].ry+'deg'}">
+        <div class="icon client"><mat-icon>person</mat-icon></div>
+        <div class="body">
           <h3>Espace Client</h3>
           <p>Créer et consulter vos réclamations, joindre des documents, suivre les réponses.</p>
-        </div>
-        <div class="role-cta">
-          <button mat-raised-button color="primary" (click)="goClient()" aria-label="Accéder à l’espace Client">
+          <button mat-raised-button color="primary" (click)="goClient()">
             <mat-icon>login</mat-icon> Je suis Client
           </button>
         </div>
       </mat-card>
 
+      <!-- Carte AGENT -->
       <mat-card class="role-card"
-                tabindex="0"
-                (click)="goAgent()"
-                (keyup.enter)="goAgent()"
-                matRipple
-                [matRippleColor]="'#ef3e7a22'">
-        <div class="role-icon agent"><mat-icon>support_agent</mat-icon></div>
-        <div class="role-body">
+        #c1
+        (mousemove)="onMove($event,1,c1)"
+        (mouseleave)="onLeave(1)"
+        (click)="goAgent()"
+        matRipple
+        [ngStyle]="{'--mx': cards[1].mx+'px','--my': cards[1].my+'px','--rx': cards[1].rx+'deg','--ry': cards[1].ry+'deg'}">
+        <div class="icon agent"><mat-icon>support_agent</mat-icon></div>
+        <div class="body">
           <h3>Espace Agent</h3>
           <p>Traiter, qualifier et répondre aux réclamations. Outils et tableaux de bord.</p>
-        </div>
-        <div class="role-cta">
-          <button mat-raised-button color="accent" (click)="goAgent()" aria-label="Accéder à l’espace Agent">
+          <button mat-raised-button color="accent" (click)="goAgent()">
             <mat-icon>arrow_forward</mat-icon> Je suis Agent
           </button>
         </div>
       </mat-card>
-    </div>
-  </section>
+    </section>
 
-  <!-- Bénéfices clés -->
-  <section class="features" aria-label="Bénéfices du portail">
-    <div class="feature">
-      <div class="ficon"><mat-icon>lock</mat-icon></div>
-      <div>
-        <h4>Protection & conformité</h4>
-        <p>Données chiffrées, traçabilité complète, conformité RGPD et politiques CDG.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <div class="ficon"><mat-icon>speed</mat-icon></div>
-      <div>
-        <h4>Délais maîtrisés</h4>
-        <p>Accusé instantané, priorisation des dossiers et notifications d’avancement.</p>
-      </div>
-    </div>
-    <div class="feature">
-      <div class="ficon"><mat-icon>insert_drive_file</mat-icon></div>
-      <div>
-        <h4>Pièces jointes</h4>
-        <p>Ajoutez des documents justificatifs (PDF, images, Word) en quelques clics.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Aide & contact -->
-  <section class="help" aria-label="Assistance">
-    <div class="helpbar">
-      <div class="left">
+    <!-- Barre d’aide compacte, épinglée -->
+    <section class="helpbar" aria-label="Assistance">
+      <div class="h-left">
         <div class="lifesaver"><mat-icon>support</mat-icon></div>
         <div>
           <strong>Besoin d’aide ?</strong>
           <div class="muted">Notre support vous accompagne du lundi au vendredi</div>
         </div>
       </div>
-      <div class="right">
+      <div class="h-right">
         <button mat-stroked-button color="primary" (click)="mailto()">
           <mat-icon>mail</mat-icon> support&#64;cdg.ma
         </button>
@@ -101,12 +78,8 @@
           <mat-icon>help_outline</mat-icon> FAQ
         </button>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <footer class="footer">
-    © {{year}} Caisse de Dépôt et de Gestion — Portail des Réclamations.
-    <a href="#" (click)="legal($event)">Mentions légales</a> ·
-    <a href="#" (click)="privacy($event)">Protection des données</a>
-  </footer>
+    
+  </div>
 </div>

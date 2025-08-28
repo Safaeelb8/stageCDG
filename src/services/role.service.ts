@@ -1,9 +1,21 @@
 import { Injectable } from '@angular/core';
+
+export type AppRole = 'CLIENT' | 'AGENT';
+
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  private role: 'Client'|'Agent'|null = null;
-  setRole(r:'Client'|'Agent'){ this.role = r; }
-  getRole(){ return this.role; }
-  clearRole(){ this.role = null; }
-}
+  private readonly KEY = 'selectedRole';
 
+  setRole(r: AppRole) {
+    sessionStorage.setItem(this.KEY, r);
+  }
+
+  getRole(): AppRole | null {
+    const v = sessionStorage.getItem(this.KEY);
+    return v === 'CLIENT' || v === 'AGENT' ? v : null;
+  }
+
+  clearRole() {
+    sessionStorage.removeItem(this.KEY);
+  }
+}

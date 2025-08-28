@@ -75,7 +75,7 @@ export class ReclamationDetailComponent implements OnInit {
   }
 
   openAttachment(att: Attachment) {
-    const url = att.url || this.api.attachmentUrl(this.reclamationId, String(att.id));
+    const url = att.url || this.api.attachmentUrl(this.reclamationId); // ✅ un seul argument
     window.open(url, '_blank');
   }
 

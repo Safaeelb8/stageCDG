@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ReclamationService } from '../services/reclamation.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-reclamation-new',
@@ -27,17 +28,17 @@ export class ReclamationNewComponent implements OnInit {
   private fb = inject(FormBuilder);
   private snack = inject(MatSnackBar);
   private api = inject(ReclamationService);
+  private authSvc = inject(AuthService);
+  private router = inject(Router);
 
   form!: FormGroup;
   isSending = false;
-
   selectedFile: File | null = null;
   selectedFileName = '';
   dragOver = false;
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      clientId: [null, [Validators.required, Validators.min(1)]],
       categorie: ['', Validators.required],
       objet: ['', [Validators.required, Validators.maxLength(100)]],
       description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]],
@@ -45,30 +46,27 @@ export class ReclamationNewComponent implements OnInit {
   }
 
   get f() { return this.form.controls; }
+  get me() { return this.authSvc.me; }
+  get isAgent() { return this.router.url.startsWith('/agent'); }
 
-  // --- Fichiers
+  goBack() {
+    const base = this.isAgent ? '/agent' : '/client';
+    this.router.navigate([base, 'reclamations']);
+  }
+
   onFileSelected(ev: Event) {
     const input = ev.target as HTMLInputElement;
     const f = input.files && input.files[0];
     if (!f) return;
     this.acceptFile(f);
   }
-
-  onDragOver(e: DragEvent) {
-    e.preventDefault();
-    this.dragOver = true;
-  }
-  onDragLeave(e: DragEvent) {
-    e.preventDefault();
-    this.dragOver = false;
-  }
+  onDragOver(e: DragEvent) { e.preventDefault(); this.dragOver = true; }
+  onDragLeave(e: DragEvent) { e.preventDefault(); this.dragOver = false; }
   onDrop(e: DragEvent) {
-    e.preventDefault();
-    this.dragOver = false;
+    e.preventDefault(); this.dragOver = false;
     const f = e.dataTransfer?.files?.[0];
     if (f) this.acceptFile(f);
   }
-
   private acceptFile(f: File) {
     const allowed = [
       'application/pdf',
@@ -88,22 +86,15 @@ export class ReclamationNewComponent implements OnInit {
     this.selectedFile = f;
     this.selectedFileName = f.name;
   }
+  clearFile() { this.selectedFile = null; this.selectedFileName = ''; }
 
-  clearFile() {
-    this.selectedFile = null;
-    this.selectedFileName = '';
-  }
-
-  // --- Envoi
   submit() {
     if (this.isSending) return;
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
+    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    if (!this.me) { this.snack.open('Session expirée, reconnectez-vous.', 'Fermer', { duration: 4000 }); return; }
 
     const fd = new FormData();
-    fd.append('clientId', String(this.f['clientId'].value));
+    fd.append('clientId', String(this.me.userId)); // id injecté automatiquement depuis la session
     fd.append('categorie', String(this.f['categorie'].value));
     fd.append('objet', String(this.f['objet'].value));
     fd.append('description', String(this.f['description'].value));
@@ -115,18 +106,15 @@ export class ReclamationNewComponent implements OnInit {
         this.isSending = false;
         this.snack.open(`Réclamation #${created.id} créée ✅`, 'Fermer', { duration: 3000 });
         this.reset();
+        this.goBack();
       },
       error: (err) => {
         this.isSending = false;
         const msg = err?.error?.message || 'Erreur lors de la création';
         this.snack.open(msg, 'Fermer', { duration: 5000 });
-        console.error('ERREUR =>', err);
       }
     });
   }
 
-  reset() {
-    this.form.reset();
-    this.clearFile();
-  }
+  reset() { this.form.reset(); this.clearFile(); }
 }

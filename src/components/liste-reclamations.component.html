@@ -1,61 +1,61 @@
+<!-- src/app/components/liste-reclamations.component.html -->
 <div class="container">
   <!-- HERO -->
-<div class="hero">
-  <div class="hero__left">
-    <h1>Liste des réclamations</h1>
-    <p class="hero__subtitle">Suivez et traitez les demandes en un coup d’œil</p>
-  </div>
+  <div class="hero">
+    <div class="hero__left">
+      <h1>Liste des réclamations</h1>
+      <p class="hero__subtitle">Suivez et traitez les demandes en un coup d’œil</p>
+    </div>
 
-  <div class="hero__actions">
-    <button mat-stroked-button class="btn-ghost" (click)="refresh()">
-      <mat-icon class="i-rotate">autorenew</mat-icon>
-      Actualiser
-    </button>
-     <button
-    *ngIf="!isAgent"
-    type="button"
-    class="btn btn--primary"
-    [routerLink]="['/client/reclamations/nouvelle']">
-    <span class="i">＋</span> Nouvelle réclamation
-  </button>
-  </div>
-</div>
-
-<!-- KPI CARDS -->
-<section *ngIf="!loading && !error" class="stat-cards">
-  <div class="stat">
-    <div class="stat__icon stat--total"><mat-icon>inbox</mat-icon></div>
-    <div class="stat__info">
-      <div class="stat__value">{{ reclamations.length }}</div>
-      <div class="stat__label">Total</div>
+    <div class="hero__actions">
+      <button mat-stroked-button class="btn-ghost" (click)="refresh()">
+        <mat-icon class="i-rotate">autorenew</mat-icon>
+        Actualiser
+      </button>
+      <button
+        *ngIf="!isAgent"
+        type="button"
+        class="btn btn--primary"
+        [routerLink]="['/client/reclamations/nouvelle']">
+        <span class="i">＋</span> Nouvelle réclamation
+      </button>
     </div>
   </div>
 
-  <div class="stat">
-    <div class="stat__icon stat--new"><mat-icon>fiber_new</mat-icon></div>
-    <div class="stat__info">
-      <div class="stat__value">{{ countBy('NOUVELLE') }}</div>
-      <div class="stat__label">Nouvelles</div>
+  <!-- KPI CARDS -->
+  <section *ngIf="!loading && !error" class="stat-cards">
+    <div class="stat">
+      <div class="stat__icon stat--total"><mat-icon>inbox</mat-icon></div>
+      <div class="stat__info">
+        <div class="stat__value">{{ reclamations.length }}</div>
+        <div class="stat__label">Total</div>
+      </div>
     </div>
-  </div>
 
-  <div class="stat">
-    <div class="stat__icon stat--progress"><mat-icon>hourglass_top</mat-icon></div>
-    <div class="stat__info">
-      <div class="stat__value">{{ countBy('EN_COURS') }}</div>
-      <div class="stat__label">En cours</div>
+    <div class="stat">
+      <div class="stat__icon stat--new"><mat-icon>fiber_new</mat-icon></div>
+      <div class="stat__info">
+        <div class="stat__value">{{ countBy('NOUVELLE') }}</div>
+        <div class="stat__label">Nouvelles</div>
+      </div>
     </div>
-  </div>
 
-  <div class="stat">
-    <div class="stat__icon stat--done"><mat-icon>task_alt</mat-icon></div>
-    <div class="stat__info">
-      <div class="stat__value">{{ countBy('RESOLUE') }}</div>
-      <div class="stat__label">Résolues</div>
+    <div class="stat">
+      <div class="stat__icon stat--progress"><mat-icon>hourglass_top</mat-icon></div>
+      <div class="stat__info">
+        <div class="stat__value">{{ countBy('EN_COURS') }}</div>
+        <div class="stat__label">En cours</div>
+      </div>
     </div>
-  </div>
-</section>
 
+    <div class="stat">
+      <div class="stat__icon stat--done"><mat-icon>task_alt</mat-icon></div>
+      <div class="stat__info">
+        <div class="stat__value">{{ countBy('RESOLUE') }}</div>
+        <div class="stat__label">Résolues</div>
+      </div>
+    </div>
+  </section>
 
   <!-- Loading / Error / Empty -->
   <div *ngIf="loading" class="loading"><mat-icon class="spinner">autorenew</mat-icon><p>Chargement…</p></div>
@@ -112,19 +112,19 @@
             </div>
           </td>
 
-          <!-- Détails (colonne séparée) -->
-<td class="t-center">
-  <button
-    mat-icon-button
-    aria-label="Voir le détail"
-    matTooltip="Détails"
-    (click)="goDetails(r)"
-  >
-    <mat-icon>search</mat-icon>
-  </button>
-</td>
+          <!-- Détails -->
+          <td class="t-center">
+            <button
+              mat-icon-button
+              aria-label="Voir le détail"
+              matTooltip="Détails"
+              (click)="goDetails(r)"
+            >
+              <mat-icon>search</mat-icon>
+            </button>
+          </td>
 
-          <!-- Réponses (colonne séparée) -->
+          <!-- Réponses -->
           <td class="t-center">
             <button mat-button color="primary" class="btn-link" (click)="goReponses(r)">Réponses</button>
           </td>

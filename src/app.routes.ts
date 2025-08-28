@@ -6,32 +6,37 @@ import { ReclamationNewComponent } from './components/ajout-reclamation.componen
 import { ReponsesListComponent } from './components/liste-reponses.component';
 import { ReponseNewComponent } from './components/ajout-reponse.component';
 import { RoleSelectComponent } from './components/role-select.component';
-import { ReclamationDetailComponent } from './components/reclamation-detail.component'; // ⬅️ nouveau
+import { ReclamationDetailComponent } from './components/reclamation-detail.component';
 import { roleGuard } from './role.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'role', pathMatch: 'full' },
   { path: 'role', component: RoleSelectComponent },
 
-  // --- CLIENT (lecture / création réclamation) ---
+  { path: 'auth/login', loadComponent: () => import('./components/auth/login.component').then(m => m.LoginComponent) },
+  { path: 'auth/register', loadComponent: () => import('./components/auth/register.component').then(m => m.RegisterComponent) },
+
+  // --- CLIENT ---
   {
     path: 'client',
     canActivate: [roleGuard],
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'reclamations' }, // ⬅️ important
       { path: 'reclamations', component: ReclamationsListComponent },
       { path: 'reclamations/nouvelle', component: ReclamationNewComponent },
-      { path: 'reclamations/:id', component: ReclamationDetailComponent },          // ⬅️ détails client
-      { path: 'reclamations/:id/reponses', component: ReponsesListComponent },      // réponses client
+      { path: 'reclamations/:id', component: ReclamationDetailComponent },
+      { path: 'reclamations/:id/reponses', component: ReponsesListComponent },
     ]
   },
 
-  // --- AGENT (lecture / réponses / statut) ---
+  // --- AGENT ---
   {
     path: 'agent',
     canActivate: [roleGuard],
     children: [
+      { path: '', pathMatch: 'full', redirectTo: 'reclamations' }, // ⬅️ important
       { path: 'reclamations', component: ReclamationsListComponent },
-      { path: 'reclamations/:id', component: ReclamationDetailComponent },          // ⬅️ détails agent
+      { path: 'reclamations/:id', component: ReclamationDetailComponent },
       { path: 'reclamations/:id/reponses', component: ReponsesListComponent },
       { path: 'reclamations/:id/reponses/nouvelle', component: ReponseNewComponent },
     ]

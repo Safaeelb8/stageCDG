@@ -1,8 +1,10 @@
+// src/components/ajout-reponse.component.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReclamationService } from '../services/reclamation.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   standalone: true,
@@ -16,7 +18,6 @@ export class ReponseNewComponent implements OnInit {
   maxLen = 1000;
 
   form = this.fb.group({
-    agentId: [null, [Validators.required, Validators.min(1)]],        // ⬅️ obligatoire
     message: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(this.maxLen)]]
   });
 
@@ -28,30 +29,41 @@ export class ReponseNewComponent implements OnInit {
     private fb: FormBuilder,
     private api: ReclamationService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
     this.reclamationId = Number(this.route.snapshot.paramMap.get('id'));
+
+    const me = this.auth.me;
+    if (!me || me.role !== 'AGENT') {
+      this.error = 'Session agent requise.';
+      this.router.navigate(['/auth/login'], { queryParams: { role: 'AGENT' } });
+    }
   }
 
   get messageCtrl(): AbstractControl { return this.form.controls['message']; }
-  get agentCtrl(): AbstractControl { return this.form.controls['agentId']; }
 
   cancel(): void {
-    // cette page est côté Agent ; on revient vers la liste des réponses agent
     this.router.navigate(['/agent/reclamations', this.reclamationId, 'reponses']);
   }
 
   submit(): void {
     if (this.loading || this.form.invalid) { this.form.markAllAsTouched(); return; }
 
+    const me = this.auth.me;
+    if (!me || me.role !== 'AGENT') {
+      this.error = 'Rôle incompatible (AGENT attendu).';
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     this.success = false;
 
     const message = String(this.form.value.message || '').trim();
-    const agentId = Number(this.form.value.agentId);
+    const agentId = me.userId; // ⬅️ depuis la session
 
     this.api.createReponse({ reclamationId: this.reclamationId, message, agentId }).subscribe({
       next: () => {
@@ -59,9 +71,9 @@ export class ReponseNewComponent implements OnInit {
         this.success = true;
         setTimeout(() => this.router.navigate(['/agent/reclamations', this.reclamationId, 'reponses']), 600);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.error = "Erreur lors de l'ajout de la réponse.";
+        this.error = err?.error?.error || err?.error?.message || "Erreur lors de l'ajout de la réponse.";
       }
     });
   }

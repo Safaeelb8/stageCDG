@@ -1,5 +1,22 @@
 <div class="page">
   <main class="container">
+
+    <!-- Hero barre : retour + badge rôle -->
+    <div class="hero-bar">
+      <button type="button" class="btn-back" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        <span>Retour aux réclamations</span>
+      </button>
+
+      <div class="hero-right" *ngIf="me">
+        <span class="role-chip" [class.agent]="isAgent">
+          <mat-icon>shield_person</mat-icon>
+          {{ isAgent ? 'Agent' : 'Client' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Carte formulaire -->
     <mat-card class="form-card">
       <mat-card-header>
         <div class="avatar"><mat-icon>cloud_upload</mat-icon></div>
@@ -12,15 +29,8 @@
       <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="submit()" class="form" novalidate>
 
-          <!-- Ligne 1 en grille: ID + Catégorie -->
+          <!-- Catégorie -->
           <div class="form-grid">
-            <mat-form-field appearance="fill" class="field">
-              <mat-label>ID Client*</mat-label>
-              <input matInput type="number" formControlName="clientId" placeholder="1" />
-              <mat-error *ngIf="f.clientId.touched && f.clientId.hasError('required')">Requis</mat-error>
-              <mat-error *ngIf="f.clientId.touched && f.clientId.hasError('min')">Valeur minimale: 1</mat-error>
-            </mat-form-field>
-
             <mat-form-field appearance="fill" class="field">
               <mat-label>Catégorie de la réclamation*</mat-label>
               <mat-select formControlName="categorie" required>
@@ -37,8 +47,7 @@
           <!-- Objet -->
           <mat-form-field appearance="fill" class="field">
             <mat-label>Objet de la réclamation*</mat-label>
-            <input
-              matInput formControlName="objet" maxlength="100" placeholder="Résumé en une phrase">
+            <input matInput formControlName="objet" maxlength="100" placeholder="Résumé en une phrase">
             <mat-icon matSuffix>title</mat-icon>
             <mat-hint align="start" class="hint">Sois concis et précis</mat-hint>
             <mat-hint align="end" class="counter">{{ f.objet.value?.length || 0 }}/100</mat-hint>
@@ -52,7 +61,7 @@
               matInput rows="7" formControlName="description" maxlength="1000"
               (keydown.control.enter)="submit()"></textarea>
             <mat-icon matSuffix>description</mat-icon>
-            <mat-hint align="start" class="hint">Astuce: <b>Ctrl+Entrée</b> pour envoyer</mat-hint>
+            <mat-hint align="start" class="hint">Astuce : <b>Ctrl+Entrée</b> pour envoyer</mat-hint>
             <mat-hint align="end" class="counter">{{ f.description.value?.length || 0 }}/1000</mat-hint>
             <mat-error *ngIf="f.description.touched && f.description.hasError('required')">Requis</mat-error>
             <mat-error *ngIf="f.description.touched && f.description.hasError('minlength')">
@@ -60,7 +69,7 @@
             </mat-error>
           </mat-form-field>
 
-          <!-- Fichier joint: drag & drop -->
+          <!-- Fichier joint -->
           <div class="file-zone" [class.dragover]="dragOver"
                (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
 
