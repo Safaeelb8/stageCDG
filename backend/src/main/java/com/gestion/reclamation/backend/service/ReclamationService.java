@@ -1,10 +1,13 @@
+// src/main/java/com/gestion/reclamation/backend/service/ReclamationService.java
 package com.gestion.reclamation.backend.service;
 
 import com.gestion.reclamation.backend.model.Client;
 import com.gestion.reclamation.backend.model.Reclamation;
 import com.gestion.reclamation.backend.model.StatutReclamation;
+import com.gestion.reclamation.backend.model.UserAccount;
 import com.gestion.reclamation.backend.repository.ClientRepository;
 import com.gestion.reclamation.backend.repository.ReclamationRepository;
+import com.gestion.reclamation.backend.repository.UserAccountRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,23 +25,48 @@ public class ReclamationService {
 
     private final ReclamationRepository reclamationRepository;
     private final ClientRepository clientRepository;
+    private final UserAccountRepository userAccountRepository;
 
     public ReclamationService(ReclamationRepository reclamationRepository,
-                              ClientRepository clientRepository) {
+                              ClientRepository clientRepository,
+                              UserAccountRepository userAccountRepository) {
         this.reclamationRepository = reclamationRepository;
         this.clientRepository = clientRepository;
+        this.userAccountRepository = userAccountRepository;
+    }
+
+    /** Sélecteur: d'abord client.id, sinon user_account.id → client lié (créé si absent) */
+    private Client resolveClientBySelector(Long selectorId) {
+        // 1) client.id direct (compat)
+        Optional<Client> direct = clientRepository.findById(selectorId);
+        if (direct.isPresent()) return direct.get();
+
+        // 2) user_account.id (sélecteur venant du front = auth.me.userId)
+        UserAccount ua = userAccountRepository.findById(selectorId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client introuvable"));
+
+        // ⛔ rôle incompatible
+        if (ua.getRole() != com.gestion.reclamation.backend.model.Role.CLIENT) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Rôle incompatible: CLIENT attendu");
+        }
+
+        // 3) crée/retourne le Client rattaché à cet email (modèle actuel)
+        return clientRepository.findByEmail(ua.getEmail()).orElseGet(() -> {
+            Client c = new Client();
+            c.setEmail(ua.getEmail());
+            c.setNom(ua.getNom());
+            return clientRepository.save(c);
+        });
     }
 
     @Transactional
-    public Reclamation create(Long clientId, Reclamation r, MultipartFile fichierJoint) {
-        if (clientId == null) {
+    public Reclamation create(Long clientSelectorId, Reclamation r, MultipartFile fichierJoint) {
+        if (clientSelectorId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "clientId est obligatoire");
         }
 
-        Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Client introuvable"));
+        Client client = resolveClientBySelector(clientSelectorId);
 
-        // Fichier (optionnel)
         if (fichierJoint != null && !fichierJoint.isEmpty()) {
             try {
                 r.setFileName(fichierJoint.getOriginalFilename());
@@ -49,7 +77,6 @@ public class ReclamationService {
             }
         }
 
-        // Initialisation champs
         if (r.getStatut() == null) r.setStatut(StatutReclamation.NOUVELLE);
         if (r.getDateCreation() == null) r.setDateCreation(LocalDateTime.now());
         r.setClient(client);
@@ -57,8 +84,10 @@ public class ReclamationService {
         try {
             return reclamationRepository.save(r);
         } catch (DataIntegrityViolationException ex) {
-            // typiquement: description > 1000, etc.
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Données invalides: " + ex.getMostSpecificCause().getMessage());
+            throw new ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Données invalides: " + ex.getMostSpecificCause().getMessage()
+            );
         }
     }
 
@@ -67,25 +96,22 @@ public class ReclamationService {
         return reclamationRepository.findAll();
     }
 
+    @Transactional
+    public List<Reclamation> getByClientSelector(Long selectorId) {
+        Client c = resolveClientBySelector(selectorId);
+        return reclamationRepository.findByClient_Id(c.getId());
+    }
+
     @Transactional(readOnly = true)
     public Optional<Reclamation> findById(Long id) {
         return reclamationRepository.findById(id);
     }
 
     @Transactional
-    public Reclamation updateStatus(Long id, com.gestion.reclamation.backend.model.StatutReclamation newStatus) {
+    public Reclamation updateStatus(Long id, StatutReclamation newStatus) {
         Reclamation r = reclamationRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Réclamation introuvable"));
         r.setStatut(newStatus);
         return reclamationRepository.save(r);
-    }
-
-    // Laisser au besoin
-    @Transactional(readOnly = true)
-    public List<Reclamation> getAll() { return reclamationRepository.findAll(); }
-
-    @Transactional(readOnly = true)
-    public List<Reclamation> getByClient(Long clientId) {
-        return reclamationRepository.findByClientId(clientId);
     }
 }
