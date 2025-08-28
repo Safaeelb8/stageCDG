@@ -1,61 +1,51 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { HttpClient, HttpParams, HttpErrorResponse } from '@angular/common/http';
+import { Observable, tap, map } from 'rxjs';
+import { environment } from '../environments/environment';
 
-type User = {
-  id: number;
-  username: string;
-  role: string;
-  nom: string;
-  email: string;
-};
-
-type LoginResponse =
-  | { user: User; token?: string } // backend renvoie un wrapper
-  | User;                          // backend renvoie directement l'utilisateur
+export type Role = 'CLIENT' | 'AGENT';
+export interface AuthResponse { token: string; userId: number; role: Role; nom: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private baseUrl = 'http://localhost:8080/api/auth';
-
+  private base = `${environment.apiUrl}/api/auth`;
   constructor(private http: HttpClient) {}
 
-  /** username OU email dans "identifier" */
-  login(identifier: string, password: string): Observable<LoginResponse> {
-    return this.http
-      .post<LoginResponse>(`${this.baseUrl}/login`, { identifier, password })
-      .pipe(
-        tap((res) => {
-          // Normaliser la réponse
-          const user: User = (res as any).user ?? (res as User);
-          const token = (res as any).token ?? 'dummy';
-
-          // Stockage local (nécessaire pour guards/interceptors)
-          localStorage.setItem('token', token);
-          localStorage.setItem('user', JSON.stringify(user));
-        })
-      );
+  /** Sauvegarde unique de la session */
+  setSession(res: AuthResponse) {
+    localStorage.setItem('auth', JSON.stringify(res));
+    sessionStorage.removeItem('selectedRole');
   }
 
-  register(user: Partial<User> & { password: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/register`, user);
+  register(role: Role, payload: { email:string; password:string; nom:string; prenom:string }): Observable<AuthResponse> {
+    const params = new HttpParams().set('role', role);
+    return this.http.post<AuthResponse>(`${this.base}/register`, payload, { params }).pipe(
+      tap(res => this.setSession(res))
+    );
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+  login(payload: { email:string; password:string }): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.base}/login`, payload).pipe(
+      tap(res => this.setSession(res))
+    );
   }
 
-  isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+  /** ➜ Empêche "je choisis CLIENT" mais je me loggue en AGENT (ou inverse) */
+  loginWithRole(role: Role, payload: { email:string; password:string }): Observable<AuthResponse> {
+    return this.login(payload).pipe(
+      map(res => {
+        if (res.role !== role) {
+          throw new HttpErrorResponse({
+            status: 403,
+            error: { message: `Rôle incompatible: ce compte est ${res.role}, vous avez choisi ${role}.` }
+          });
+        }
+        return res;
+      })
+    );
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
-
-  getCurrentUser(): User | null {
-    const user = localStorage.getItem('user');
-    return user ? JSON.parse(user) : null;
-  }
+  logout() { localStorage.removeItem('auth'); }
+  get me(): AuthResponse | null { try { return JSON.parse(localStorage.getItem('auth') || 'null'); } catch { return null; } }
 }

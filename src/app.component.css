@@ -1,0 +1,90 @@
+/* ====== HEADER collant, unique ====== */
+.site-header{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(90deg,#6d5ef5,#7b61ff 55%,#8f5fe0);
+  color:#fff;
+  box-shadow: 0 6px 24px rgba(43,27,120,.25);
+}
+
+.site-header__wrap{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;  /* centre la marque, actions à droite */
+  align-items: center;
+}
+
+/* bloc marque centré */
+.site-brand{
+  grid-column: 2;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+/* logo image */
+.brand-logo{
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+.brand-logo img{
+  height: 100%;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,.12));
+}
+
+.brand-text .title{
+  font-weight: 800;
+  letter-spacing: .2px;
+  font-size: 18px;
+}
+.brand-text .subtitle{
+  opacity: .95;
+  font-weight: 600;
+}
+
+/* bouton “Changer de rôle” aligné à droite */
+.role-switch{
+  grid-column: 3;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: #fff;
+  text-decoration: none;
+  background: #ffffff24;
+  border: 1px solid #ffffff36;
+  backdrop-filter: blur(2px);
+  transition: transform .15s, box-shadow .15s, background .2s;
+}
+.role-switch:hover{
+  background: #ffffff32;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.22);
+}
+
+/* ====== MAIN ====== */
+.site-main{
+  padding: 20px;
+  min-height: 100vh;
+  background: #f4f6fb;
+}
+
+.role-banner{
+  background:#fff;
+  border:1px solid #e6e7ef;
+  border-radius:10px;
+  padding:10px 12px;
+  margin:0 0 12px 0;
+  color:#1f2430;
+}

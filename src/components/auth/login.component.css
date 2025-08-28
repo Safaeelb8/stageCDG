@@ -1,0 +1,58 @@
+:root{
+  --bg:#f6f7fb; --card:#fff; --border:#e5e7ef; --text:#1f2430; --muted:#6b7280;
+  --primary:#5b53e6; --accent:#ef3e7a;
+}
+
+.auth-page{
+  min-height: calc(100vh - 72px); /* sous la barre violette */
+  display:grid; place-items:center;
+  position:relative; padding:24px 16px;
+  background:
+    radial-gradient(1000px 420px at 100% -10%, #7b61ff1a, transparent 55%),
+    radial-gradient(900px 380px at 0% -5%, #b2b0ff22, transparent 60%),
+    var(--bg);
+}
+
+.bg-halation{ position:absolute; inset:0; pointer-events:none; }
+
+.auth-card{
+  width:100%; max-width:520px; border-radius:18px;
+  border:1px solid var(--border); background:var(--card);
+  box-shadow: 0 30px 60px rgba(28, 22, 84, .08);
+  padding:22px 22px 18px;
+}
+
+.card-head{ text-align:center; margin-bottom:8px; }
+.card-head h1{ margin:8px 0 6px; font-weight:900; letter-spacing:.2px; }
+.subtitle{ margin:0; color:var(--muted); }
+
+.role-pill{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:999px; color:#fff; font-weight:700;
+  transform:translateY(-6px);
+}
+.role--client{ background:linear-gradient(135deg,#5b53e6,#7c74ff); }
+.role--agent { background:linear-gradient(135deg,#ef3e7a,#ff689c); }
+
+.form{ margin-top:8px; display:flex; flex-direction:column; gap:12px; }
+.field{ width:100%; }
+
+.actions{
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:6px;
+}
+.btn-primary mat-icon{ margin-right:6px; }
+.link-role{ margin-left:auto; display:inline-flex; align-items:center; gap:6px; color:#5b53e6; text-decoration:none; }
+.link-role:hover{ text-decoration:underline; }
+
+.alert{
+  margin-top:10px; padding:10px 12px; border-radius:10px; display:flex; gap:8px; align-items:center;
+  border:1px solid #ffd1d1; color:#b42318; background:#fff5f5;
+}
+
+.animate-pop{
+  animation: popIn .35s cubic-bezier(.2,.8,.2,1);
+}
+@keyframes popIn{
+  from{ opacity:0; transform: translateY(8px) scale(.98); }
+  to  { opacity:1; transform: translateY(0)  scale(1); }
+}

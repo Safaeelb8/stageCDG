@@ -1,0 +1,9 @@
+/* Réutilise exactement les styles du login pour cohérence */
+@import './login.component.css';
+
+.grid-2{
+  display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+}
+@media (max-width: 640px){
+  .grid-2{ grid-template-columns: 1fr; }
+}
