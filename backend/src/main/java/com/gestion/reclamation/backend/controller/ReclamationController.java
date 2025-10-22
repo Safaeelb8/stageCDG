@@ -60,14 +60,19 @@ public class ReclamationController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────────
-    // Liste
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Transactional(readOnly = true)
-    public List<ReclamationDto> list() {
-        return reclamationService.findAll().stream()
-                .map(ReclamationDto::from)
-                .toList();
-    }
+ // src/main/java/com/gestion/reclamation/backend/controller/ReclamationController.java
+ // ... imports ...
+
+ @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+ @Transactional(readOnly = true)
+ public List<ReclamationDto> list(@RequestParam(required = false) Long clientId) {
+     List<Reclamation> list = (clientId != null)
+             ? reclamationService.getByClientSelector(clientId)
+             : reclamationService.findAll(); // ✅ maintenant existe
+
+     return list.stream().map(ReclamationDto::from).toList();
+ }
+
 
     // ─────────────────────────────────────────────────────────────────────────────
     // Détail

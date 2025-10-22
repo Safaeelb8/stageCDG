@@ -1,10 +1,15 @@
+// src/main/java/com/gestion/reclamation/backend/controller/ReponseController.java
 package com.gestion.reclamation.backend.controller;
 
 import com.gestion.reclamation.backend.model.Reponse;
 import com.gestion.reclamation.backend.service.ReponseService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reponses")
@@ -17,7 +22,7 @@ public class ReponseController {
         this.service = service;
     }
 
-    // POST /api/reponses/reclamation/{reclamationId}/agent/{agentId}
+    // POST (inchangé)
     @PostMapping("/reclamation/{reclamationId}/agent/{agentId}")
     public ResponseEntity<Reponse> addWithAgent(
             @PathVariable Long reclamationId,
@@ -28,7 +33,6 @@ public class ReponseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // POST /api/reponses/reclamation/{reclamationId}  (agent optionnel non fourni)
     @PostMapping("/reclamation/{reclamationId}")
     public ResponseEntity<Reponse> addWithoutAgent(
             @PathVariable Long reclamationId,
@@ -38,16 +42,40 @@ public class ReponseController {
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // GET /api/reponses/reclamation/{reclamationId}
+    // ✅ GET: renvoie des DTO (pas les entités JPA)
     @GetMapping("/reclamation/{reclamationId}")
-    public ResponseEntity<Iterable<Reponse>> listByReclamation(@PathVariable Long reclamationId) {
-        return ResponseEntity.ok(service.listByReclamation(reclamationId));
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<ReponseDto>> listByReclamation(@PathVariable Long reclamationId) {
+        var list = service.listByReclamation(reclamationId); // aucune 404 ici : [] si rien
+        var out = list.stream().map(ReponseDto::from).toList();
+        return ResponseEntity.ok(out);
     }
 
-    // DTO pour le corps de la requête
     public static class ReponseRequest {
         private String message;
         public String getMessage() { return message; }
         public void setMessage(String message) { this.message = message; }
+    }
+
+    // -------- DTOs utilisés par le front --------
+    public record AgentMini(Long id, String nom, String prenom) {}
+
+    public record ReponseDto(
+            Long id,
+            String message,
+            String dateReponse,    // ISO-8601 string
+            AgentMini agent        // peut être null
+    ) {
+        private static final DateTimeFormatter ISO = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+        public static ReponseDto from(Reponse r) {
+            AgentMini a = null;
+            if (r.getAgent() != null) {
+                // prenom inconnu dans ton modèle Agent -> null
+                a = new AgentMini(r.getAgent().getId(), r.getAgent().getNom(), null);
+            }
+            String date = (r.getDateReponse() != null) ? r.getDateReponse().format(ISO) : null;
+            return new ReponseDto(r.getId(), r.getMessage(), date, a);
+        }
     }
 }
